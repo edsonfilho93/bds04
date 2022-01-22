@@ -26,7 +26,6 @@ public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
     private static final String[] CLIENT_ROUTES = {"/events/**"};
 
 
-
     @Autowired
     private JwtTokenStore tokenStore;
 

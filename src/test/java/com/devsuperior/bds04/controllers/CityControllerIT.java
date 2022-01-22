@@ -24,112 +24,111 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Transactional
 public class CityControllerIT {
 
-	@Autowired
-	private MockMvc mockMvc;
-	
-	@Autowired
-	private ObjectMapper objectMapper;
-	
-	@Autowired
-	private TokenUtil tokenUtil;
+  @Autowired
+  private MockMvc mockMvc;
 
-	private String clientUsername;
-	private String clientPassword;
-	private String adminUsername;
-	private String adminPassword;
-	
-	@BeforeEach
-	void setUp() throws Exception {
-		
-		clientUsername = "ana@gmail.com";
-		clientPassword = "123456";
-		adminUsername = "bob@gmail.com";
-		adminPassword = "123456";
-	}
+  @Autowired
+  private ObjectMapper objectMapper;
 
-	@Test
-	public void insertShouldReturn401WhenNoUserLogged() throws Exception {
+  @Autowired
+  private TokenUtil tokenUtil;
 
-		CityDTO dto = new CityDTO(null, "Recife");
-		String jsonBody = objectMapper.writeValueAsString(dto);
-		
-		ResultActions result =
-				mockMvc.perform(post("/cities")
-					.content(jsonBody)
-					.contentType(MediaType.APPLICATION_JSON)
-					.accept(MediaType.APPLICATION_JSON));
-		
-		result.andExpect(status().isUnauthorized());
-	}
-	
-	@Test
-	public void insertShouldReturn403WhenClientLogged() throws Exception {
+  private String clientUsername;
+  private String clientPassword;
+  private String adminUsername;
+  private String adminPassword;
 
-		String accessToken = tokenUtil.obtainAccessToken(mockMvc, clientUsername, clientPassword);
+  @BeforeEach
+  void setUp() throws Exception {
 
-		CityDTO dto = new CityDTO(null, "Recife");
-		String jsonBody = objectMapper.writeValueAsString(dto);
-		
-		ResultActions result =
-				mockMvc.perform(post("/cities")
-					.header("Authorization", "Bearer " + accessToken)
-					.content(jsonBody)
-					.contentType(MediaType.APPLICATION_JSON)
-					.accept(MediaType.APPLICATION_JSON));
-		
-		result.andExpect(status().isForbidden());
-	}
-	
-	@Test
-	public void insertShouldInsertResourceWhenAdminLoggedAndCorrectData() throws Exception {
+    clientUsername = "ana@gmail.com";
+    clientPassword = "123456";
+    adminUsername = "bob@gmail.com";
+    adminPassword = "123456";
+  }
 
-		String accessToken = tokenUtil.obtainAccessToken(mockMvc, adminUsername, adminPassword);
+  @Test
+  public void insertShouldReturn401WhenNoUserLogged() throws Exception {
 
-		CityDTO dto = new CityDTO(null, "Recife");
-		String jsonBody = objectMapper.writeValueAsString(dto);
-		
-		ResultActions result =
-				mockMvc.perform(post("/cities")
-					.header("Authorization", "Bearer " + accessToken)
-					.content(jsonBody)
-					.contentType(MediaType.APPLICATION_JSON)
-					.accept(MediaType.APPLICATION_JSON));
-		
-		result.andExpect(status().isCreated());
-		result.andExpect(jsonPath("$.id").exists());
-		result.andExpect(jsonPath("$.name").value("Recife"));
-	}
+    CityDTO dto = new CityDTO(null, "Recife");
+    String jsonBody = objectMapper.writeValueAsString(dto);
 
-	@Test
-	public void insertShouldReturn422WhenAdminLoggedAndBlankName() throws Exception {
+    ResultActions result =
+            mockMvc.perform(post("/cities")
+                    .content(jsonBody)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_JSON));
 
-		String accessToken = tokenUtil.obtainAccessToken(mockMvc, adminUsername, adminPassword);
+    result.andExpect(status().isUnauthorized());
+  }
 
-		CityDTO dto = new CityDTO(null, "    ");
-		String jsonBody = objectMapper.writeValueAsString(dto);
-		
-		ResultActions result =
-				mockMvc.perform(post("/cities")
-					.header("Authorization", "Bearer " + accessToken)
-					.content(jsonBody)
-					.contentType(MediaType.APPLICATION_JSON)
-					.accept(MediaType.APPLICATION_JSON));
-		
-		result.andExpect(status().isUnprocessableEntity());
-		result.andExpect(jsonPath("$.errors[0].fieldName").value("name"));
-		result.andExpect(jsonPath("$.errors[0].message").value("Campo requerido"));
-	}
+  @Test
+  public void insertShouldReturn403WhenClientLogged() throws Exception {
 
-	@Test
-	public void findAllShouldReturnAllResourcesSortedByName() throws Exception {
-		
-		ResultActions result =
-				mockMvc.perform(get("/cities")
-					.contentType(MediaType.APPLICATION_JSON));
+    String accessToken = tokenUtil.obtainAccessToken(mockMvc, clientUsername, clientPassword);
 
-		result.andExpect(status().isOk());
-		result.andExpect(jsonPath("$[0].name").value("Belo Horizonte"));
-		result.andExpect(jsonPath("$[1].name").value("Belém"));
-		result.andExpect(jsonPath("$[2].name").value("Brasília"));
-	}
+    CityDTO dto = new CityDTO(null, "Recife");
+    String jsonBody = objectMapper.writeValueAsString(dto);
+
+    ResultActions result =
+            mockMvc.perform(post("/cities")
+                    .header("Authorization", "Bearer " + accessToken)
+                    .content(jsonBody)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_JSON));
+
+    result.andExpect(status().isForbidden());
+  }
+
+  @Test
+  public void insertShouldInsertResourceWhenAdminLoggedAndCorrectData() throws Exception {
+
+    String accessToken = tokenUtil.obtainAccessToken(mockMvc, adminUsername, adminPassword);
+
+    CityDTO dto = new CityDTO(null, "Recife");
+    String jsonBody = objectMapper.writeValueAsString(dto);
+
+    ResultActions result =
+            mockMvc.perform(post("/cities")
+                    .header("Authorization", "Bearer " + accessToken)
+                    .content(jsonBody)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_JSON));
+
+    result.andExpect(status().isCreated());
+    result.andExpect(jsonPath("$.id").exists());
+    result.andExpect(jsonPath("$.name").value("Recife"));
+  }
+
+  @Test
+  public void insertShouldReturn422WhenAdminLoggedAndBlankName() throws Exception {
+
+    String accessToken = tokenUtil.obtainAccessToken(mockMvc, adminUsername, adminPassword);
+
+    CityDTO dto = new CityDTO(null, "    ");
+    String jsonBody = objectMapper.writeValueAsString(dto);
+
+    ResultActions result =
+            mockMvc.perform(post("/cities")
+                    .header("Authorization", "Bearer " + accessToken)
+                    .content(jsonBody)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_JSON));
+
+    result.andExpect(status().isUnprocessableEntity());
+    result.andExpect(jsonPath("$.errors[0].fieldName").value("name"));
+    result.andExpect(jsonPath("$.errors[0].message").value("Campo requerido"));
+  }
+
+  @Test
+  public void findAllShouldReturnAllResourcesSortedByName() throws Exception {
+
+    ResultActions result =
+            mockMvc.perform(get("/cities?page=0&size=12&sort=name,asc").contentType(MediaType.APPLICATION_JSON));
+
+    result.andExpect(status().isOk());
+    result.andExpect(jsonPath("$.content[0].name").value("Belo Horizonte"));
+    result.andExpect(jsonPath("$.content[1].name").value("Belém"));
+    result.andExpect(jsonPath("$.content[2].name").value("Brasília"));
+  }
 }

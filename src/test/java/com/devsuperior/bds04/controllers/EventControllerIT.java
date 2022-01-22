@@ -26,163 +26,163 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Transactional
 public class EventControllerIT {
 
-	@Autowired
-	private MockMvc mockMvc;
-	
-	@Autowired
-	private ObjectMapper objectMapper;
-	
-	@Autowired
-	private TokenUtil tokenUtil;
+  @Autowired
+  private MockMvc mockMvc;
 
-	private String clientUsername;
-	private String clientPassword;
-	private String adminUsername;
-	private String adminPassword;
-	
-	@BeforeEach
-	void setUp() throws Exception {
-		
-		clientUsername = "ana@gmail.com";
-		clientPassword = "123456";
-		adminUsername = "bob@gmail.com";
-		adminPassword = "123456";
-	}
+  @Autowired
+  private ObjectMapper objectMapper;
 
-	@Test
-	public void insertShouldReturn401WhenNoUserLogged() throws Exception {
+  @Autowired
+  private TokenUtil tokenUtil;
 
-		EventDTO dto = new EventDTO(null, "Expo XP", LocalDate.of(2021, 5, 18), "https://expoxp.com.br", 1L);
-		String jsonBody = objectMapper.writeValueAsString(dto);
-		
-		ResultActions result =
-				mockMvc.perform(post("/events")
-					.content(jsonBody)
-					.contentType(MediaType.APPLICATION_JSON)
-					.accept(MediaType.APPLICATION_JSON));
-		
-		result.andExpect(status().isUnauthorized());
-	}
+  private String clientUsername;
+  private String clientPassword;
+  private String adminUsername;
+  private String adminPassword;
 
-	@Test
-	public void insertShouldInsertResourceWhenClientLoggedAndCorrectData() throws Exception {
+  @BeforeEach
+  void setUp() throws Exception {
 
-		String accessToken = tokenUtil.obtainAccessToken(mockMvc, clientUsername, clientPassword);
-		LocalDate nextMonth = LocalDate.now().plusMonths(1L);
-		
-		EventDTO dto = new EventDTO(null, "Expo XP", nextMonth, "https://expoxp.com.br", 1L);
-		String jsonBody = objectMapper.writeValueAsString(dto);
-		
-		ResultActions result =
-				mockMvc.perform(post("/events")
-					.header("Authorization", "Bearer " + accessToken)
-					.content(jsonBody)
-					.contentType(MediaType.APPLICATION_JSON)
-					.accept(MediaType.APPLICATION_JSON));
-		
-		result.andExpect(status().isCreated());
-		result.andExpect(jsonPath("$.id").exists());
-		result.andExpect(jsonPath("$.name").value("Expo XP"));
-		result.andExpect(jsonPath("$.date").value(nextMonth.toString()));
-		result.andExpect(jsonPath("$.url").value("https://expoxp.com.br"));
-		result.andExpect(jsonPath("$.cityId").value(1L));
-	}
+    clientUsername = "ana@gmail.com";
+    clientPassword = "123456";
+    adminUsername = "bob@gmail.com";
+    adminPassword = "123456";
+  }
 
-	@Test
-	public void insertShouldInsertResourceWhenAdminLoggedAndCorrectData() throws Exception {
+  @Test
+  public void insertShouldReturn401WhenNoUserLogged() throws Exception {
 
-		String accessToken = tokenUtil.obtainAccessToken(mockMvc, adminUsername, adminPassword);
-		LocalDate nextMonth = LocalDate.now().plusMonths(1L);
-		
-		EventDTO dto = new EventDTO(null, "Expo XP", nextMonth, "https://expoxp.com.br", 1L);
-		String jsonBody = objectMapper.writeValueAsString(dto);
-		
-		ResultActions result =
-				mockMvc.perform(post("/events")
-					.header("Authorization", "Bearer " + accessToken)
-					.content(jsonBody)
-					.contentType(MediaType.APPLICATION_JSON)
-					.accept(MediaType.APPLICATION_JSON));
-		
-		result.andExpect(status().isCreated());
-		result.andExpect(jsonPath("$.id").exists());
-		result.andExpect(jsonPath("$.name").value("Expo XP"));
-		result.andExpect(jsonPath("$.date").value(nextMonth.toString()));
-		result.andExpect(jsonPath("$.url").value("https://expoxp.com.br"));
-		result.andExpect(jsonPath("$.cityId").value(1L));
-	}
+    EventDTO dto = new EventDTO(null, "Expo XP", LocalDate.of(2021, 5, 18), "https://expoxp.com.br", 1L);
+    String jsonBody = objectMapper.writeValueAsString(dto);
 
-	@Test
-	public void insertShouldReturn422WhenAdminLoggedAndBlankName() throws Exception {
+    ResultActions result =
+            mockMvc.perform(post("/events")
+                    .content(jsonBody)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_JSON));
 
-		String accessToken = tokenUtil.obtainAccessToken(mockMvc, adminUsername, adminPassword);
-		LocalDate nextMonth = LocalDate.now().plusMonths(1L);
-		
-		EventDTO dto = new EventDTO(null, "      ", nextMonth, "https://expoxp.com.br", 1L);
-		String jsonBody = objectMapper.writeValueAsString(dto);
-		
-		ResultActions result =
-				mockMvc.perform(post("/events")
-					.header("Authorization", "Bearer " + accessToken)
-					.content(jsonBody)
-					.contentType(MediaType.APPLICATION_JSON)
-					.accept(MediaType.APPLICATION_JSON));
-		
-		result.andExpect(status().isUnprocessableEntity());
-		result.andExpect(jsonPath("$.errors[0].fieldName").value("name"));
-		result.andExpect(jsonPath("$.errors[0].message").value("Campo requerido"));
-	}
+    result.andExpect(status().isUnauthorized());
+  }
 
-	@Test
-	public void insertShouldReturn422WhenAdminLoggedAndPastDate() throws Exception {
+  @Test
+  public void insertShouldInsertResourceWhenClientLoggedAndCorrectData() throws Exception {
 
-		String accessToken = tokenUtil.obtainAccessToken(mockMvc, adminUsername, adminPassword);
-		LocalDate pastMonth = LocalDate.now().minusMonths(1L);
-		
-		EventDTO dto = new EventDTO(null, "Expo XP", pastMonth, "https://expoxp.com.br", 1L);
-		String jsonBody = objectMapper.writeValueAsString(dto);
-		
-		ResultActions result =
-				mockMvc.perform(post("/events")
-					.header("Authorization", "Bearer " + accessToken)
-					.content(jsonBody)
-					.contentType(MediaType.APPLICATION_JSON)
-					.accept(MediaType.APPLICATION_JSON));
-		
-		result.andExpect(status().isUnprocessableEntity());
-		result.andExpect(jsonPath("$.errors[0].fieldName").value("date"));
-		result.andExpect(jsonPath("$.errors[0].message").value("A data do evento não pode ser passada"));
-	}
+    String accessToken = tokenUtil.obtainAccessToken(mockMvc, clientUsername, clientPassword);
+    LocalDate nextMonth = LocalDate.now().plusMonths(1L);
 
-	@Test
-	public void insertShouldReturn422WhenAdminLoggedAndNullCity() throws Exception {
+    EventDTO dto = new EventDTO(null, "Expo XP", nextMonth, "https://expoxp.com.br", 1L);
+    String jsonBody = objectMapper.writeValueAsString(dto);
 
-		String accessToken = tokenUtil.obtainAccessToken(mockMvc, adminUsername, adminPassword);
-		LocalDate nextMonth = LocalDate.now().plusMonths(1L);
-		
-		EventDTO dto = new EventDTO(null, "Expo XP", nextMonth, "https://expoxp.com.br", null);
-		String jsonBody = objectMapper.writeValueAsString(dto);
-		
-		ResultActions result =
-				mockMvc.perform(post("/events")
-					.header("Authorization", "Bearer " + accessToken)
-					.content(jsonBody)
-					.contentType(MediaType.APPLICATION_JSON)
-					.accept(MediaType.APPLICATION_JSON));
-		
-		result.andExpect(status().isUnprocessableEntity());
-		result.andExpect(jsonPath("$.errors[0].fieldName").value("cityId"));
-		result.andExpect(jsonPath("$.errors[0].message").value("Campo requerido"));
-	}
+    ResultActions result =
+            mockMvc.perform(post("/events")
+                    .header("Authorization", "Bearer " + accessToken)
+                    .content(jsonBody)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_JSON));
 
-	@Test
-	public void findAllShouldReturnPagedResources() throws Exception {
-		
-		ResultActions result =
-				mockMvc.perform(get("/events")
-					.contentType(MediaType.APPLICATION_JSON));
+    result.andExpect(status().isCreated());
+    result.andExpect(jsonPath("$.id").exists());
+    result.andExpect(jsonPath("$.name").value("Expo XP"));
+    result.andExpect(jsonPath("$.date").value(nextMonth.toString()));
+    result.andExpect(jsonPath("$.url").value("https://expoxp.com.br"));
+    result.andExpect(jsonPath("$.cityId").value(1L));
+  }
 
-		result.andExpect(status().isOk());
-		result.andExpect(jsonPath("$.content").exists());
-	}	
+  @Test
+  public void insertShouldInsertResourceWhenAdminLoggedAndCorrectData() throws Exception {
+
+    String accessToken = tokenUtil.obtainAccessToken(mockMvc, adminUsername, adminPassword);
+    LocalDate nextMonth = LocalDate.now().plusMonths(1L);
+
+    EventDTO dto = new EventDTO(null, "Expo XP", nextMonth, "https://expoxp.com.br", 1L);
+    String jsonBody = objectMapper.writeValueAsString(dto);
+
+    ResultActions result =
+            mockMvc.perform(post("/events")
+                    .header("Authorization", "Bearer " + accessToken)
+                    .content(jsonBody)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_JSON));
+
+    result.andExpect(status().isCreated());
+    result.andExpect(jsonPath("$.id").exists());
+    result.andExpect(jsonPath("$.name").value("Expo XP"));
+    result.andExpect(jsonPath("$.date").value(nextMonth.toString()));
+    result.andExpect(jsonPath("$.url").value("https://expoxp.com.br"));
+    result.andExpect(jsonPath("$.cityId").value(1L));
+  }
+
+  @Test
+  public void insertShouldReturn422WhenAdminLoggedAndBlankName() throws Exception {
+
+    String accessToken = tokenUtil.obtainAccessToken(mockMvc, adminUsername, adminPassword);
+    LocalDate nextMonth = LocalDate.now().plusMonths(1L);
+
+    EventDTO dto = new EventDTO(null, "      ", nextMonth, "https://expoxp.com.br", 1L);
+    String jsonBody = objectMapper.writeValueAsString(dto);
+
+    ResultActions result =
+            mockMvc.perform(post("/events")
+                    .header("Authorization", "Bearer " + accessToken)
+                    .content(jsonBody)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_JSON));
+
+    result.andExpect(status().isUnprocessableEntity());
+    result.andExpect(jsonPath("$.errors[0].fieldName").value("name"));
+    result.andExpect(jsonPath("$.errors[0].message").value("Campo requerido"));
+  }
+
+  @Test
+  public void insertShouldReturn422WhenAdminLoggedAndPastDate() throws Exception {
+
+    String accessToken = tokenUtil.obtainAccessToken(mockMvc, adminUsername, adminPassword);
+    LocalDate pastMonth = LocalDate.now().minusMonths(1L);
+
+    EventDTO dto = new EventDTO(null, "Expo XP", pastMonth, "https://expoxp.com.br", 1L);
+    String jsonBody = objectMapper.writeValueAsString(dto);
+
+    ResultActions result =
+            mockMvc.perform(post("/events")
+                    .header("Authorization", "Bearer " + accessToken)
+                    .content(jsonBody)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_JSON));
+
+    result.andExpect(status().isUnprocessableEntity());
+    result.andExpect(jsonPath("$.errors[0].fieldName").value("date"));
+    result.andExpect(jsonPath("$.errors[0].message").value("A data do evento não pode ser passada"));
+  }
+
+  @Test
+  public void insertShouldReturn422WhenAdminLoggedAndNullCity() throws Exception {
+
+    String accessToken = tokenUtil.obtainAccessToken(mockMvc, adminUsername, adminPassword);
+    LocalDate nextMonth = LocalDate.now().plusMonths(1L);
+
+    EventDTO dto = new EventDTO(null, "Expo XP", nextMonth, "https://expoxp.com.br", null);
+    String jsonBody = objectMapper.writeValueAsString(dto);
+
+    ResultActions result =
+            mockMvc.perform(post("/events")
+                    .header("Authorization", "Bearer " + accessToken)
+                    .content(jsonBody)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_JSON));
+
+    result.andExpect(status().isUnprocessableEntity());
+    result.andExpect(jsonPath("$.errors[0].fieldName").value("cityId"));
+    result.andExpect(jsonPath("$.errors[0].message").value("Campo requerido"));
+  }
+
+  @Test
+  public void findAllShouldReturnPagedResources() throws Exception {
+
+    ResultActions result =
+            mockMvc.perform(get("/events?page=0")
+                    .contentType(MediaType.APPLICATION_JSON));
+
+    result.andExpect(status().isOk());
+    result.andExpect(jsonPath("$.content").exists());
+  }
 }

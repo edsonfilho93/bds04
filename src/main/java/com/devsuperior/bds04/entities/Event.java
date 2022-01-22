@@ -14,65 +14,65 @@ import javax.persistence.Table;
 @Table(name = "tb_event")
 public class Event {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
-	private String name;
-	private LocalDate date;
-	private String url;
-	
-	@ManyToOne
-	@JoinColumn(name = "city_id")
-	private City city;
-	
-	public Event() {
-	}
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String name;
+    private LocalDate date;
+    private String url;
 
-	public Event(Long id, String name, LocalDate date, String url, City city) {
-		this.id = id;
-		this.name = name;
-		this.date = date;
-		this.url = url;
-		this.city = city;
-	}
+    @ManyToOne
+    @JoinColumn(name = "city_id")
+    private City city;
 
-	public Long getId() {
-		return id;
-	}
+    public Event() {
+    }
 
-	public void setId(Long id) {
-		this.id = id;
-	}
+    public Event(Long id, String name, LocalDate date, String url, City city) {
+        this.id = id;
+        this.name = name;
+        this.date = date;
+        this.url = url;
+        this.city = city;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public Long getId() {
+        return id;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-	public LocalDate getDate() {
-		return date;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public void setDate(LocalDate date) {
-		this.date = date;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public String getUrl() {
-		return url;
-	}
+    public LocalDate getDate() {
+        return date;
+    }
 
-	public void setUrl(String url) {
-		this.url = url;
-	}
+    public void setDate(LocalDate date) {
+        this.date = date;
+    }
 
-	public City getCity() {
-		return city;
-	}
+    public String getUrl() {
+        return url;
+    }
 
-	public void setCity(City city) {
-		this.city = city;
-	}
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public City getCity() {
+        return city;
+    }
+
+    public void setCity(City city) {
+        this.city = city;
+    }
 }
